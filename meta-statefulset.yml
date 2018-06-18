@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: influxdb-meta
+  namespace: mit
+spec:
+  serviceName: influxdb-meta
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        app: influxdb
+        role: meta
+        storage: gp2
+        cluster: mit
+    spec:
+      containers:
+      - name: influxdb
+        imagePullPolicy: Always
+        image: influxdb:1.5.3-meta-alpine
+        env:
+        - name: "INFLUXDB_ENTERPRISE_LICENSE_KEY"
+          value: "b95fb808-0439-4b84-9b8f-e6447d85cd51"
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/influxdb/meta
+        ports:
+        - containerPort: 8088
+          name: meta1
+        - containerPort: 8089
+          name: meta2
+        - containerPort: 8091
+          name: meta3
+        command: ["bash", "-c", "influxd-meta -config /etc/influxdb/influxdb-meta.conf -hostname $(hostname -f)"]
+      - name: telegraf
+        imagePullPolicy: Always
+        image: 455567940957.dkr.ecr.us-west-2.amazonaws.com/telegraf:influxdb-iops
+        command: ["sleep", "300000"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: aws-us-west-2a-gp2
+      resources:
+        requests:
+          storage: 100Gi

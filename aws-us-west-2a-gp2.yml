@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: aws-us-west-2a-gp2
+parameters:
+  type: gp2
+  zone: us-west-2a

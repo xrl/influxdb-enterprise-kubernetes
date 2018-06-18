@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-data
+  labels:
+    app: influxdb
+    role: data
+spec:
+  ports:
+  - port: 8088
+    name: meta1
+  - port: 8089
+    name: meta2
+  - port: 8091
+    name: meta3
+  - port: 8086
+    name: restapi
+  clusterIP: None
+  selector:
+    app: influxdb
+    role: data

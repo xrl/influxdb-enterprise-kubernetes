@@ -1,0 +1,104 @@
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: influxdb-data
+  namespace: mit
+spec:
+  serviceName: influxdb-data
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: influxdb
+        role: data
+        storage: gp2
+        cluster: mit
+    spec:
+      tolerations: 
+      - key: "purpose"
+        operator: "Equal"
+        value: "influxdb"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kops.k8s.io/instancegroup
+                operator: In
+                values:
+                - influxdb-enterprise
+      containers:
+      - name: influxdb
+        imagePullPolicy: Always
+        image: influxdb:1.5.3-data-alpine
+        env:
+        - name: "INFLUXDB_DB"
+          value: "mit"
+        - name: "INFLUXDB_HTTP_AUTH_ENABLED"
+          value: "false"
+        - name: "INFLUXDB_ADMIN_USER"
+          value: "admin"
+        - name: "INFLUXDB_ADMIN_PASSWORD"
+          value: "satellitesarecool"
+        - name: "INFLUXDB_USER"
+          value: "buddy"
+        - name: "INFLUXDB_USER_PASSWORD"
+          value: "bythesea"
+        - name: "INFLUXDB_READ_USER"
+          value: "buddyreader"
+        - name: "INFLUXDB_READ_USER_PASSWORD"
+          value: "bookworm"
+        - name: "INFLUXDB_WRITE_USER"
+          value: "countscribula"
+        - name: "INFLUXDB_WRITE_USER_PASSWORD"
+          value: "bigbadscribe"
+        - name: "INFLUXDB_DATA_WAL_DIR"
+          value: "/var/lib/influxdb-wal"
+        - name: "INFLUXDB_ENTERPRISE_LICENSE_KEY"
+          valueFrom:
+            secretKeyRef:
+              name: influxdb
+              key: INFLUXDB_ENTERPRISE_LICENSE_KEY
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/influxdb
+        - name: wal
+          mountPath: /var/lib/influxdb-wal
+        ports:
+        - containerPort: 8088
+          name: meta1
+        - containerPort: 8089
+          name: meta2
+        - containerPort: 8091
+          name: meta3
+        - containerPort: 8086
+          name: restapi
+        command: ["bash", "-c", "influxd -config /etc/influxdb/influxdb.conf -hostname $(hostname -f)"]
+      - name: telegraf
+        imagePullPolicy: Always
+        image: 455567940957.dkr.ecr.us-west-2.amazonaws.com/telegraf:influxdb-iops
+        command: ["sleep", "300000"]
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: wal
+          mountPath: /wal
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: aws-us-west-2a-gp2
+      resources:
+        requests:
+          storage: 5Ti
+  - metadata:
+      name: wal
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: aws-us-west-2a-gp2
+      resources:
+        requests:
+          storage: 1Ti
