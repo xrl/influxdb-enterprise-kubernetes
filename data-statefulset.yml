@@ -6,7 +6,7 @@ metadata:
   namespace: mit
 spec:
   serviceName: influxdb-data
-  replicas: 4
+  replicas: 10
   template:
     metadata:
       labels:
@@ -79,7 +79,11 @@ spec:
       - name: telegraf
         imagePullPolicy: Always
         image: 455567940957.dkr.ecr.us-west-2.amazonaws.com/telegraf:influxdb-iops
-        command: ["sleep", "300000"]
+        env:
+        - name: NAMESPACE
+          value: influxdb-enterprise
+        - name: INFLUXDB_URL
+          value: http://influxdb.metrics:8086
         volumeMounts:
         - name: data
           mountPath: /data

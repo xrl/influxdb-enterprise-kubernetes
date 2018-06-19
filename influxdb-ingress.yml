@@ -1,14 +1,14 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: chronograf
+  name: influxdb-enterprise
   namespace: mit
 spec:
   rules:
-  - host: chronograf.itsecmon.viasat.io
+  - host: influxdb-enterprise.itsecmon.viasat.io
     http:
       paths:
       - path: /
         backend:
-          serviceName: chronograf
-          servicePort: 8888
+          serviceName: influxdb-data
+          servicePort: 8086
