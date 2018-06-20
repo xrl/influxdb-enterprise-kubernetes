@@ -21,7 +21,10 @@ spec:
         image: influxdb:1.5.3-meta-alpine
         env:
         - name: "INFLUXDB_ENTERPRISE_LICENSE_KEY"
-          value: "b95fb808-0439-4b84-9b8f-e6447d85cd51"
+          valueFrom:
+            secretKeyRef:
+              name: influxdb
+              key: INFLUXDB_ENTERPRISE_LICENSE_KEY
         volumeMounts:
         - name: data
           mountPath: /var/lib/influxdb/meta
