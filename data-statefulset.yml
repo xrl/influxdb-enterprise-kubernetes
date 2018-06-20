@@ -56,6 +56,8 @@ spec:
           value: "bigbadscribe"
         - name: "INFLUXDB_DATA_WAL_DIR"
           value: "/var/lib/influxdb-wal"
+        - name: "INFLUXDB_DATA_MAX_SERIES_PER_DATABASE"
+          value: "10000000"
         - name: "INFLUXDB_ENTERPRISE_LICENSE_KEY"
           valueFrom:
             secretKeyRef:
